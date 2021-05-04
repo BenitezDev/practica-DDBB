@@ -1,5 +1,9 @@
 package series;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+
+
 public class SeriesDatabase {
 
 	public SeriesDatabase() {
@@ -7,7 +11,27 @@ public class SeriesDatabase {
 	}
 
 	public boolean openConnection() {
-		return false;
+		
+		//String drv = "com.mysql.jdbc.Driver";
+        //Class.forName(drv);
+       
+        String serverAddress = "localhost:3306";
+        String db = "series";
+        String user = "series_user";
+        String pass = "series_pass";
+        String url = "jdbc:mysql://" + serverAddress + "/" + db;
+        
+		try{
+	        Connection conn = DriverManager.getConnection(url, user, pass);
+	        System.out.println("Conectado a la base de datos!");
+	        return true;
+		}
+		catch(Exception e){
+			System.err.println("Error al conectar la BD" + e.getMessage());
+	        e.printStackTrace();
+			return false;
+		}
+		
 	}
 
 	public boolean closeConnection() {

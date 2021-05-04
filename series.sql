@@ -58,7 +58,7 @@ CREATE TABLE pertenece (
     ON DELETE CASCADE ON UPDATE CASCADE,
   FOREIGN KEY (id_genero) REFERENCES genero (id_genero)
     ON DELETE CASCADE ON UPDATE CASCADE
-)
+);
 
 
 # Inserción de datos

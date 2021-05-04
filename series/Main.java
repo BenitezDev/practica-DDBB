@@ -12,6 +12,8 @@ public class Main {
 		SeriesDatabase series = new SeriesDatabase();
 		char menuOption = 'a';
 
+		series.openConnection();
+		
 		// Main menu loop
 		do {
 			System.out.println("Escoja una opción: ");
