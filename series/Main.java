@@ -23,7 +23,13 @@ public class Main {
 			System.out.println("  4) Obtener la valoración media de un género.");
 			System.out.println("  5) Poner foto de perfil.");
 			System.out.println("  0) Salir de la aplicación.");
-
+			
+			System.out.println();
+			// Extras:
+			System.out.println("  6) Conectar con la ddbb.");
+			System.out.println("  7) Desconectar con la ddbb.");
+			System.out.println("  8) Crear tabla capitulos.");
+			
 			// Read user's option and check that it is a valid option
 			menuOption = 'a';
 			do {
@@ -31,28 +37,26 @@ public class Main {
 				if (line.length()==1) {
 					menuOption = line.charAt(0);
 				}
-				if (menuOption<'0' || menuOption>'5') {
+				if (menuOption<'0' || menuOption>'8') {
 					System.out.println("Opción incorrecta.");
 				}
-			} while (menuOption<'0' || menuOption>'5');
+			} while (menuOption<'0' || menuOption>'8');
 
 			// Call a specific method depending on the option
 			switch (menuOption) {
 			case '1':
-//				System.out.println("Creando tabla \"capitulo\"...");
-//				series.createTableCapitulo();
-//				System.out.println("Creando tabla \"valora\"...");
-//				series.createTableValora();
-				System.out.println("1:" + series.openConnection());
+				System.out.println("Creando tabla \"capitulo\"...");
+				series.createTableCapitulo();
+				System.out.println("Creando tabla \"valora\"...");
+				series.createTableValora();				
 				break;
 			case '2':
-//				System.out.println("Cargando datos de la tabla \"capitulo\"...");
-//				int n = series.loadCapitulos("capitulos.csv");
-//				System.out.println("Se han cargado " + n + " entradas.");
-//				System.out.println("Cargando datos de la tabla \"valora\"...");
-//				n = series.loadValoraciones("valoraciones.csv");
-//				System.out.println("Se han cargado " + n + " entradas.");
-				System.out.println("2:" + series.closeConnection());
+				System.out.println("Cargando datos de la tabla \"capitulo\"...");
+				int n = series.loadCapitulos("capitulos.csv");
+				System.out.println("Se han cargado " + n + " entradas.");
+				System.out.println("Cargando datos de la tabla \"valora\"...");
+				n = series.loadValoraciones("valoraciones.csv");
+				System.out.println("Se han cargado " + n + " entradas.");
 				break;
 			case '3':
 				System.out.println("Catálogo disponible:");
@@ -68,8 +72,17 @@ public class Main {
 				System.out.println("Cargando imagen...");
 				series.setFoto("HomerSimpson.jpg.jpg");
 				break;
+			case '6':
+				System.out.println(series.openConnection());
+				break;
+			case '7':
+				System.out.println(series.closeConnection());
+				break;	
+			case '8':
+				series.createTableCapitulo();
+				break;
 			}
-			
+			System.out.println("===========================================================");
 			if (menuOption!='0')
 				System.out.println("¿Qué más desea hacer?");
 			else

@@ -2,7 +2,9 @@ package series;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 
 public class SeriesDatabase {
@@ -68,7 +70,25 @@ public class SeriesDatabase {
 	}
 
 	public boolean createTableCapitulo() {
-		return false;
+		
+		// TODO
+		String query = "SELECT * FROM serie";
+		
+		
+		try {
+			Statement st = conn.createStatement();
+			ResultSet rs = st.executeQuery(query);
+			System.out.println("La query: \"" + query + "\" ha sido ejecutada.");
+			
+			return true;
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+		
+		
+		
 	}
 
 	public boolean createTableValora() {
