@@ -15,6 +15,11 @@ public class SeriesDatabase {
 
 	public boolean openConnection() {
 		
+
+		//String drv = "com.mysql.jdbc.Driver";
+        //Class.forName(drv);
+		
+	
         String serverAddress = "localhost:3306";
         String db = "series";
         String user = "series_user";
@@ -23,11 +28,12 @@ public class SeriesDatabase {
         
        
 		try{
+
 			// check if there is a connection
 			 if(conn != null){
-		        	return false;
+				 System.out.println("Anteriormente conectado");
+		         return false;
 		     }
-		    
 			// create connection
 	        conn = DriverManager.getConnection(url, user, pass);
 	        System.out.println("Conectado a la base de datos!");
@@ -46,9 +52,9 @@ public class SeriesDatabase {
 		
 		
 		try {
- 
 			conn.close();
-			System.out.println("Desconectado! " + conn==null);
+			conn = null;
+			System.out.println("Desconectado!");
 			return true;
 			
 		} catch (Exception e) {
