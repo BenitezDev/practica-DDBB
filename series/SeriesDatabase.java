@@ -2,9 +2,12 @@ package series;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
 
 
 public class SeriesDatabase {
+	
+	private Connection conn;
 
 	public SeriesDatabase() {
 
@@ -12,18 +15,23 @@ public class SeriesDatabase {
 
 	public boolean openConnection() {
 		
-		//String drv = "com.mysql.jdbc.Driver";
-        //Class.forName(drv);
-       
         String serverAddress = "localhost:3306";
         String db = "series";
         String user = "series_user";
         String pass = "series_pass";
         String url = "jdbc:mysql://" + serverAddress + "/" + db;
         
+       
 		try{
-	        Connection conn = DriverManager.getConnection(url, user, pass);
+			// check if there is a connection
+			 if(conn != null){
+		        	return false;
+		     }
+		    
+			// create connection
+	        conn = DriverManager.getConnection(url, user, pass);
 	        System.out.println("Conectado a la base de datos!");
+	        
 	        return true;
 		}
 		catch(Exception e){
@@ -35,7 +43,22 @@ public class SeriesDatabase {
 	}
 
 	public boolean closeConnection() {
-		return false;
+		
+		
+		try {
+ 
+			conn.close();
+			System.out.println("Desconectado! " + conn==null);
+			return true;
+			
+		} catch (Exception e) {
+			System.err.println("Error al desconectar " + e.getMessage());
+//	        e.printStackTrace();
+			return false;
+		}
+	
+		
+		
 	}
 
 	public boolean createTableCapitulo() {
