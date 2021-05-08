@@ -162,7 +162,8 @@ public class SeriesDatabase {
 		}
 	}
 
- 
+	// TODO: creat catch para "no driver" diapo 25!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	
 	public int loadCapitulos(String fileName) {
 		
 		openConnection();
@@ -174,7 +175,7 @@ public class SeriesDatabase {
 			conn.setAutoCommit(false);
 			
 			// Try to load the .csv
-			try (BufferedReader bufferLectura = new BufferedReader(new FileReader("src/" + fileName));)
+			try (BufferedReader bufferLectura = new BufferedReader(new FileReader(fileName));)
 			{
 				String insert_query = 	"INSERT INTO capitulo (id_serie, n_temporada,n_orden, fecha, titulo, duracion)" + 
 										"VALUES (?,?,?,?,?,?);";
@@ -226,7 +227,70 @@ public class SeriesDatabase {
 	}
 
 	public int loadValoraciones(String fileName) {
-		return 0;
+		
+		openConnection();
+		
+		int newEntries = 0;
+		
+		// SQL
+		try{
+			conn.setAutoCommit(true); // por si las moscas. no es necesario
+			
+			// Try to load the .csv
+			try (BufferedReader bufferLectura = new BufferedReader(new FileReader(fileName));)
+			{
+				String insert_query = 	"INSERT INTO valora (id_serie, n_temporada, n_orden, id_usuario, fecha, valor)" + 
+										"VALUES (?,?,?,?,?,?);";
+				
+				String linea = bufferLectura.readLine();
+				linea = bufferLectura.readLine();// no queremos la cabezera del .csv
+				PreparedStatement ps; //  = conn.prepareStatement()
+				
+				
+				int x = 0;
+				while (linea != null) 
+				{
+					if(x >= 33)
+					{
+						break;
+					}
+					String[] campo = linea.split(";"); 
+					
+					ps = conn.prepareStatement(insert_query);
+					
+					
+					// lo mismo interesa pasar los numeros como string y no hacer la basura del valueOf
+					ps.setInt	(1, Integer.valueOf(campo[0]));
+					ps.setInt	(2, Integer.valueOf(campo[1]));
+					ps.setInt	(3, Integer.valueOf(campo[2]));
+					ps.setInt	(4, Integer.valueOf(campo[3]));
+					ps.setString(5, campo[4]);
+					ps.setInt	(6, Integer.valueOf(campo[5]));
+					
+					newEntries++;
+					
+					ps.executeUpdate();
+	
+					linea = bufferLectura.readLine();		
+					x++;
+				}
+				
+			} 
+			catch (IOException e) 
+			{
+				System.out.println("No se puede leer el archivoooooooooooooo.");
+				e.printStackTrace();
+			}
+		}
+		catch(SQLException e)
+		{
+			e.printStackTrace();
+			System.out.println("Error SQL.");
+			newEntries = 0;
+		}
+		
+		System.out.println("Se han añadido " + newEntries);
+		return newEntries;
 	}
 
 	public String catalogo() {
