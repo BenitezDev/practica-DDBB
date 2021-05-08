@@ -148,7 +148,43 @@ public class SeriesDatabase {
 	}
 
 	public int loadCapitulos(String fileName) {
+		
+		conn.setAutoCommit(false);
+		
+		// INSERT DESDE PREPARED ST CICLO 
+		// exce
+		if(result = 0) //fallo porqueno inserta nada
+			conn.rollback();
+		else conn.commit();
+		
+		conn.setAutoCommit(true); //commit.
+		
 		return 0;
+//		
+//		private void insercionPrepared() throws Exception {
+//			String nombre[] = {"Clara", "Dani", "Edward", "Denzel"};
+//			String apellido[] = {"Lago", "Rovira", "Norton", "Washington"};
+//			
+//			// Sin ID porque es autoincremental
+//			
+//			String query = "INSERT INTO actor (first_name, last_name, last_update) VALUES (?,?,?);";
+//			
+//			PreparedStatement pst = conn.prepareStatement(query);
+//			
+//			for (int i = 0; i < nombre.length; i++) {
+//				pst.setString(1,  nombre[i]);
+//				pst.setString(2, apellido[i]);
+//				//pst.setDate(3, new java.sql.Date(new java.util.Date().getTime()));
+//				pst.setTimestamp(3, new java.sql.Timestamp(System.currentTimeMillis()));
+//				int res = pst.executeUpdate();
+//				System.out.println("Insertado correctamente " + ((res == 1)?"Si":"No"));
+//			}
+//			
+//			System.out.println("query ejecutada");
+//			pst.close();
+//			conn.close();  		
+//		}
+		
 	}
 
 	public int loadValoraciones(String fileName) {
