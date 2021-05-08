@@ -46,10 +46,10 @@ public class Main {
 			switch (menuOption) {
 			case '1':
 				System.out.println("Creando tabla \"capitulo\"...");
-				System.out.println(series.createTableCapitulo());
+				series.createTableCapitulo();
 				
-//				System.out.println("Creando tabla \"valora\"...");
-//				series.createTableValora();				
+				System.out.println("Creando tabla \"valora\"...");
+				series.createTableValora();				
 				break;
 			case '2':
 				System.out.println("Cargando datos de la tabla \"capitulo\"...");

@@ -75,7 +75,7 @@ public class SeriesDatabase {
 		
 		openConnection();
 		
-		String query0 = "DROP TABLE IF EXISTS capitulo;";
+	
 		String query =  
 						
 						"CREATE TABLE capitulo ( " +
@@ -90,15 +90,13 @@ public class SeriesDatabase {
 						"ON DELETE CASCADE ON UPDATE CASCADE);";
 		
 		
-		
+	
 		
 		try {
-			PreparedStatement ps1 = conn.prepareStatement(query0);
-//			Statement st = conn.createStatement();
+		
 			PreparedStatement pst = conn.prepareStatement(query);
 			
 			
-			int result0 = ps1.executeUpdate(query0);
 			int result = pst.executeUpdate(query);
 			System.out.println("Numero de filas afectadas: " + result);
 			System.out.println("La query ha sido ejecutada.");
@@ -110,14 +108,43 @@ public class SeriesDatabase {
 				System.out.println("Estado SQL: " + se.getSQLState() );
 				se.printStackTrace();
 				return false;
-		}
-		
-		
+			}
 		
 	}
 
 	public boolean createTableValora() {
-		return false;
+	openConnection();
+		
+		String query =  
+						
+						"CREATE TABLE valora ( " +
+						"fecha DATE," +
+						"id_serie INT," +
+						"n_temporada INT," +
+						"n_orden INT," +
+						"id_usuario INT," +
+						"valor INT," +
+						"PRIMARY KEY (fecha, id_serie, n_temporada, n_orden, id_usuario)," +
+						"FOREIGN KEY (id_serie, n_temporada, n_orden) REFERENCES capitulo (id_serie, n_temporada, n_orden)," +
+						"FOREIGN KEY (id_usuario) REFERENCES usuario (id_usuario)" +
+						"ON DELETE CASCADE ON UPDATE CASCADE);";
+	
+		try {
+		
+			PreparedStatement pst = conn.prepareStatement(query);
+			
+			int result = pst.executeUpdate(query);
+			System.out.println("Numero de filas afectadas: " + result);
+			System.out.println("La query ha sido ejecutada.");
+			return true;
+			
+			} catch(SQLException se) {
+				System.out.println("Mensaje de error: " + se.getMessage() );
+				System.out.println("Código de error: " + se.getErrorCode() );
+				System.out.println("Estado SQL: " + se.getSQLState() );
+				se.printStackTrace();
+				return false;
+			}
 	}
 
 	public int loadCapitulos(String fileName) {
