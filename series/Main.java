@@ -55,9 +55,9 @@ public class Main {
 				System.out.println("Cargando datos de la tabla \"capitulo\"...");
 				int n = series.loadCapitulos("capitulos.csv");
 				System.out.println("Se han cargado " + n + " entradas.");
-				System.out.println("Cargando datos de la tabla \"valora\"...");
-				n = series.loadValoraciones("valoraciones.csv");
-				System.out.println("Se han cargado " + n + " entradas.");
+//				System.out.println("Cargando datos de la tabla \"valora\"...");
+//				n = series.loadValoraciones("valoraciones.csv");
+//				System.out.println("Se han cargado " + n + " entradas.");
 				break;
 			case '3':
 				System.out.println("Catálogo disponible:");

@@ -1,15 +1,30 @@
 package series;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
+import com.mysql.jdbc.exceptions.MySQLSyntaxErrorException;
 
 public class SeriesDatabase {
-	
+
 	private Connection conn;
 
 	public SeriesDatabase() {
@@ -17,68 +32,68 @@ public class SeriesDatabase {
 	}
 
 	public boolean openConnection() {
-		
+
 
 		//String drv = "com.mysql.jdbc.Driver";
-        //Class.forName(drv);
-		
-	
-        String serverAddress = "localhost:3306";
-        String db = "series";
-        String user = "series_user";
-        String pass = "series_pass";
-        String url = "jdbc:mysql://" + serverAddress + "/" + db;
-        
-       
+		//Class.forName(drv);
+
+
+		String serverAddress = "localhost:3306";
+		String db = "series";
+		String user = "series_user";
+		String pass = "series_pass";
+		String url = "jdbc:mysql://" + serverAddress + "/" + db;
+
+
 		try{
 
 			// check if there is a connection
-			 if(conn != null){
-				 System.out.println("Anteriormente conectado");
-		         return false;
-		     }
+			if(conn != null){
+				System.out.println("Anteriormente conectado");
+				return false;
+			}
 			// create connection
-	        conn = DriverManager.getConnection(url, user, pass);
-	        System.out.println("Conectado a la base de datos!");
-	        
-	        return true;
+			conn = DriverManager.getConnection(url, user, pass);
+			System.out.println("Conectado a la base de datos!");
+
+			return true;
 		}
 		catch(Exception e){
 			System.err.println("Error al conectar la BD" + e.getMessage());
-	        e.printStackTrace();
+			e.printStackTrace();
 			return false;
 		}
-		
+
 	}
 
 	public boolean closeConnection() {
-		
-		
+
+
 		try {
 			conn.close();
 			conn = null;
 			System.out.println("Desconectado!");
 			return true;
-			
+
 		} catch (Exception e) {
 			System.err.println("Error al desconectar " + e.getMessage());
-//	        e.printStackTrace();
+			//	        e.printStackTrace();
 			return false;
 		}
-	
-		
-		
+
+
+
 	}
 
 	public boolean createTableCapitulo() {
-		
-		
+
+
 		openConnection();
-		
-	
+
+
 		String query =  
-						
-						"CREATE TABLE capitulo ( " +
+
+				"CREATE TABLE capitulo ( " +
 						"id_serie INT," +
 						"n_temporada INT," +
 						"n_orden INT," +
@@ -88,36 +103,36 @@ public class SeriesDatabase {
 						"PRIMARY KEY (id_serie, n_temporada, n_orden)," +
 						"FOREIGN KEY (id_serie, n_temporada) REFERENCES temporada (id_serie, n_temporada)" +
 						"ON DELETE CASCADE ON UPDATE CASCADE);";
-		
-		
-	
-		
+
+
+
+
 		try {
-		
+
 			PreparedStatement pst = conn.prepareStatement(query);
-			
-			
+
+
 			int result = pst.executeUpdate(query);
 			System.out.println("Numero de filas afectadas: " + result);
 			System.out.println("La query ha sido ejecutada.");
 			return true;
-			
-			} catch(SQLException se) {
-				System.out.println("Mensaje de error: " + se.getMessage() );
-				System.out.println("Código de error: " + se.getErrorCode() );
-				System.out.println("Estado SQL: " + se.getSQLState() );
-				se.printStackTrace();
-				return false;
-			}
-		
+
+		} catch(SQLException se) {
+			System.out.println("Mensaje de error: " + se.getMessage() );
+			System.out.println("Código de error: " + se.getErrorCode() );
+			System.out.println("Estado SQL: " + se.getSQLState() );
+			se.printStackTrace();
+			return false;
+		}
+
 	}
 
 	public boolean createTableValora() {
-	openConnection();
-		
+		openConnection();
+
 		String query =  
-						
-						"CREATE TABLE valora ( " +
+
+				"CREATE TABLE valora ( " +
 						"fecha DATE," +
 						"id_serie INT," +
 						"n_temporada INT," +
@@ -128,63 +143,86 @@ public class SeriesDatabase {
 						"FOREIGN KEY (id_serie, n_temporada, n_orden) REFERENCES capitulo (id_serie, n_temporada, n_orden)," +
 						"FOREIGN KEY (id_usuario) REFERENCES usuario (id_usuario)" +
 						"ON DELETE CASCADE ON UPDATE CASCADE);";
-	
+
 		try {
-		
+
 			PreparedStatement pst = conn.prepareStatement(query);
-			
+
 			int result = pst.executeUpdate(query);
 			System.out.println("Numero de filas afectadas: " + result);
 			System.out.println("La query ha sido ejecutada.");
 			return true;
-			
-			} catch(SQLException se) {
-				System.out.println("Mensaje de error: " + se.getMessage() );
-				System.out.println("Código de error: " + se.getErrorCode() );
-				System.out.println("Estado SQL: " + se.getSQLState() );
-				se.printStackTrace();
-				return false;
-			}
+
+		} catch(SQLException se) {
+			System.out.println("Mensaje de error: " + se.getMessage() );
+			System.out.println("Código de error: " + se.getErrorCode() );
+			System.out.println("Estado SQL: " + se.getSQLState() );
+			se.printStackTrace();
+			return false;
+		}
 	}
 
+ 
 	public int loadCapitulos(String fileName) {
 		
-		conn.setAutoCommit(false);
+		openConnection();
 		
-		// INSERT DESDE PREPARED ST CICLO 
-		// exce
-		if(result = 0) //fallo porqueno inserta nada
-			conn.rollback();
-		else conn.commit();
+		int newEntries = 0;
 		
-		conn.setAutoCommit(true); //commit.
+		// SQL
+		try{
+			conn.setAutoCommit(false);
+			
+			// Try to load the .csv
+			try (BufferedReader bufferLectura = new BufferedReader(new FileReader("src/" + fileName));)
+			{
+				String insert_query = 	"INSERT INTO capitulo (id_serie, n_temporada,n_orden, fecha, titulo, duracion)" + 
+										"VALUES (?,?,?,?,?,?);";
+				
+				String linea = bufferLectura.readLine();
+				linea = bufferLectura.readLine();// no queremos la cabezera del .csv
+				PreparedStatement ps; //  = conn.prepareStatement()
+	
+				while (linea != null) 
+				{
+					String[] campo = linea.split(";"); 
+	
+					// [0] = id_serie  [1] = n_temporada 
+					// [2] = n_orden   [3] = fecha         
+					// [4] = titulo    [5] = duracion  
+					
+					ps = conn.prepareStatement(insert_query);
+					ps.setString(1, campo[0]);
+					ps.setString(2, campo[1]);
+					ps.setString(3, campo[2]);
+					ps.setString(4, campo[3]);
+					ps.setString(5, campo[4]);
+					ps.setString(6, campo[5]);
+					
+					newEntries++;
+					
+					ps.executeUpdate();
+	
+					linea = bufferLectura.readLine();					
+				}
+				
+				conn.setAutoCommit(true); // hace automaticamente commit
+			} 
+			catch (IOException e) 
+			{
+				System.out.println("No se puede leer el archivoooooooooooooo.");
+				e.printStackTrace();
+			}
+		}
+		catch(SQLException e)
+		{
+			e.printStackTrace();
+			System.out.println("Error SQL.");
+			newEntries = 0;
+		}
 		
-		return 0;
-//		
-//		private void insercionPrepared() throws Exception {
-//			String nombre[] = {"Clara", "Dani", "Edward", "Denzel"};
-//			String apellido[] = {"Lago", "Rovira", "Norton", "Washington"};
-//			
-//			// Sin ID porque es autoincremental
-//			
-//			String query = "INSERT INTO actor (first_name, last_name, last_update) VALUES (?,?,?);";
-//			
-//			PreparedStatement pst = conn.prepareStatement(query);
-//			
-//			for (int i = 0; i < nombre.length; i++) {
-//				pst.setString(1,  nombre[i]);
-//				pst.setString(2, apellido[i]);
-//				//pst.setDate(3, new java.sql.Date(new java.util.Date().getTime()));
-//				pst.setTimestamp(3, new java.sql.Timestamp(System.currentTimeMillis()));
-//				int res = pst.executeUpdate();
-//				System.out.println("Insertado correctamente " + ((res == 1)?"Si":"No"));
-//			}
-//			
-//			System.out.println("query ejecutada");
-//			pst.close();
-//			conn.close();  		
-//		}
-		
+		System.out.println("Se han añadido " + newEntries);
+		return newEntries;
 	}
 
 	public int loadValoraciones(String fileName) {
@@ -203,4 +241,15 @@ public class SeriesDatabase {
 		return false;
 	}
 
+
+	private List<String> getRecordFromLine(String line) {
+		List<String> values = new ArrayList<String>();
+		try (Scanner rowScanner = new Scanner(line)) {
+			rowScanner.useDelimiter(";");
+			while (rowScanner.hasNext()) {
+				values.add(rowScanner.next());
+			}
+		}
+		return values;
+	}
 }
