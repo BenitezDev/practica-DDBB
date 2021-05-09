@@ -246,20 +246,20 @@ public class SeriesDatabase {
 
 				String linea = bufferLectura.readLine();
 				linea = bufferLectura.readLine();// no queremos la cabezera del .csv
-				
+
 				PreparedStatement ps; //  = conn.prepareStatement()
-				
-//				int x = 0;
+
+				//				int x = 0;
 
 
 				int x = 0;
 				while (linea != null) 
 				{
-//					if(x >= 33)
-//					{
-//						break;
-//					}
-					
+					//					if(x >= 33)
+					//					{
+					//						break;
+					//					}
+
 					String[] campo = linea.split(";"); 
 
 					ps = conn.prepareStatement(insert_query);
@@ -278,7 +278,7 @@ public class SeriesDatabase {
 					ps.executeUpdate();
 
 					linea = bufferLectura.readLine();		
-//					x++;
+					//					x++;
 				}
 
 			} 
@@ -307,55 +307,72 @@ public class SeriesDatabase {
 		openConnection();
 
 		String query = "SELECT temporada.id_serie, serie.titulo, temporada.n_temporada, temporada.n_capitulos " +
-					   "FROM temporada " +
-					   "INNER JOIN serie ON temporada.id_serie = serie.id_serie " +
-					   "ORDER BY temporada.id_serie, temporada.n_temporada;";
+				"FROM temporada " +
+				"INNER JOIN serie ON temporada.id_serie = serie.id_serie " +
+				"ORDER BY temporada.id_serie, temporada.n_temporada ;";
 
 		try {
 
 			PreparedStatement pst = conn.prepareStatement(query);
 			ResultSet rs = pst.executeQuery(query);
-			
+
 			String result = "{";
-			
+
 			int current_serie     = -1;
 			int current_temporada = -1;
+
 			
-			// gambito:[1]
-			
+
 			while (rs.next()) {
-							int id_serie = rs.getInt("id_serie");
-							String titulo = rs.getString("titulo");
-							int n_temporada = rs.getInt("n_temporada");
-							int n_capitulos = rs.getInt("n_capitulos");
-			
-							if(current_serie != id_serie){
-								if(current_temporada != -1){
-									result += "],";
-								}
+				
+				int id_serie = rs.getInt("id_serie");
+				String titulo = rs.getString("titulo");
+				int n_temporada = rs.getInt("n_temporada");
+				int n_capitulos = rs.getInt("n_capitulos");
+
+				if(current_serie != id_serie){
+					if(current_temporada != -1){
+						result += "],";
+					}else if(result.charAt(result.length() -1) == ']'){
+						result += ",";
+					}
+
+					current_serie = id_serie;
+					current_temporada = -1;
+					result += titulo;
+					result += ":";
+				}
+
+				if(current_temporada == -1){
+					result += "[";
+				}else{
+					result += ",";	
+				}
+
+				current_temporada = n_temporada;
+
+				if(n_temporada != 0)
+				{
+					result += n_capitulos;	
+				}
+
+
 							
-								current_serie = id_serie;
-								current_temporada = -1;
-								result += titulo;
-								result += ":";
-							}
-							
-							if(n_temporada > 0)
-							{
-								if(current_temporada == -1){
-									result += "[";
-								}else{
-									result += ",";	
-								}
-								
-								current_temporada = n_temporada;
-								result += n_capitulos;
-								
-							}
-							
+
 			}
-			result += "]}";
+			
+
+			
+			if (result.charAt(result.length() -1) == ']'){
+				result += "}";
+			}else if (result.charAt(result.length() -1) == '{'){
+				result += "}";
+			}else{
+				result += "]}";	
+			}
+
 			return result.replaceAll(" ", "_");
+			
 		} catch(SQLException se) {
 			System.out.println("Mensaje de error: " + se.getMessage() );
 			System.out.println("C�digo de error: " + se.getErrorCode() );
@@ -363,7 +380,7 @@ public class SeriesDatabase {
 			se.printStackTrace();
 			return null;
 		}
-				   				  
+
 	}
 
 	public double mediaGenero(String genero) {
