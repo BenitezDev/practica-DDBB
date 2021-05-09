@@ -163,35 +163,35 @@ public class SeriesDatabase {
 	}
 
 	// TODO: creat catch para "no driver" diapo 25!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	
+
 	public int loadCapitulos(String fileName) {
-		
+
 		openConnection();
-		
+
 		int newEntries = 0;
-		
+
 		// SQL
 		try{
 			conn.setAutoCommit(false);
-			
+
 			// Try to load the .csv
 			try (BufferedReader bufferLectura = new BufferedReader(new FileReader(fileName));)
 			{
 				String insert_query = 	"INSERT INTO capitulo (id_serie, n_temporada,n_orden, fecha, titulo, duracion)" + 
-										"VALUES (?,?,?,?,?,?);";
-				
+						"VALUES (?,?,?,?,?,?);";
+
 				String linea = bufferLectura.readLine();
 				linea = bufferLectura.readLine();// no queremos la cabezera del .csv
 				PreparedStatement ps; //  = conn.prepareStatement()
-	
+
 				while (linea != null) 
 				{
 					String[] campo = linea.split(";"); 
-	
+
 					// [0] = id_serie  [1] = n_temporada 
 					// [2] = n_orden   [3] = fecha         
 					// [4] = titulo    [5] = duracion  
-					
+
 					ps = conn.prepareStatement(insert_query);
 					ps.setString(1, campo[0]);
 					ps.setString(2, campo[1]);
@@ -199,14 +199,14 @@ public class SeriesDatabase {
 					ps.setString(4, campo[3]);
 					ps.setString(5, campo[4]);
 					ps.setString(6, campo[5]);
-					
+
 					newEntries++;
-					
+
 					ps.executeUpdate();
-	
+
 					linea = bufferLectura.readLine();					
 				}
-				
+
 				conn.setAutoCommit(true); // hace automaticamente commit
 			} 
 			catch (IOException e) 
@@ -215,38 +215,40 @@ public class SeriesDatabase {
 				e.printStackTrace();
 			}
 		}
-		catch(SQLException e)
+		catch(SQLException se)
 		{
-			e.printStackTrace();
-			System.out.println("Error SQL.");
+			se.printStackTrace();
+			System.out.println("Mensaje de error: " + se.getMessage() );
+			System.out.println("Código de error: " + se.getErrorCode() );
+			System.out.println("Estado SQL: " + se.getSQLState() );
 			newEntries = 0;
 		}
-		
+
 		System.out.println("Se han añadido " + newEntries);
 		return newEntries;
 	}
 
 	public int loadValoraciones(String fileName) {
-		
+
 		openConnection();
-		
+
 		int newEntries = 0;
-		
+
 		// SQL
 		try{
 			conn.setAutoCommit(true); // por si las moscas. no es necesario
-			
+
 			// Try to load the .csv
 			try (BufferedReader bufferLectura = new BufferedReader(new FileReader(fileName));)
 			{
 				String insert_query = 	"INSERT INTO valora (id_serie, n_temporada, n_orden, id_usuario, fecha, valor)" + 
-										"VALUES (?,?,?,?,?,?);";
-				
+						"VALUES (?,?,?,?,?,?);";
+
 				String linea = bufferLectura.readLine();
 				linea = bufferLectura.readLine();// no queremos la cabezera del .csv
 				PreparedStatement ps; //  = conn.prepareStatement()
-				
-				
+
+
 				int x = 0;
 				while (linea != null) 
 				{
@@ -255,10 +257,10 @@ public class SeriesDatabase {
 						break;
 					}
 					String[] campo = linea.split(";"); 
-					
+
 					ps = conn.prepareStatement(insert_query);
-					
-					
+
+
 					// lo mismo interesa pasar los numeros como string y no hacer la basura del valueOf
 					ps.setInt	(1, Integer.valueOf(campo[0]));
 					ps.setInt	(2, Integer.valueOf(campo[1]));
@@ -266,15 +268,15 @@ public class SeriesDatabase {
 					ps.setInt	(4, Integer.valueOf(campo[3]));
 					ps.setString(5, campo[4]);
 					ps.setInt	(6, Integer.valueOf(campo[5]));
-					
+
 					newEntries++;
-					
+
 					ps.executeUpdate();
-	
+
 					linea = bufferLectura.readLine();		
 					x++;
 				}
-				
+
 			} 
 			catch (IOException e) 
 			{
@@ -282,19 +284,65 @@ public class SeriesDatabase {
 				e.printStackTrace();
 			}
 		}
-		catch(SQLException e)
+		catch(SQLException se)
 		{
-			e.printStackTrace();
-			System.out.println("Error SQL.");
+			se.printStackTrace();
+			System.out.println("Mensaje de error: " + se.getMessage() );
+			System.out.println("Código de error: " + se.getErrorCode() );
+			System.out.println("Estado SQL: " + se.getSQLState() );
+
 			newEntries = 0;
 		}
-		
+
 		System.out.println("Se han añadido " + newEntries);
 		return newEntries;
 	}
 
 	public String catalogo() {
-		return null;
+
+		openConnection();
+
+		String query = "SELECT temporada.id_serie, serie.titulo, temporada.n_temporada, temporada.n_capitulos " +
+					   "FROM temporada " +
+					   "INNER JOIN serie ON temporada.id_serie = serie.id_serie " +
+					   "ORDER BY temporada.id_serie, temporada.n_temporada;";
+
+				
+
+		try {
+
+			PreparedStatement pst = conn.prepareStatement(query);
+			ResultSet rs = pst.executeQuery(query);
+			
+			String result = "{";
+			int current_serie = -1;
+			while (rs.next()) {
+							int id_serie = rs.getInt("id_serie");
+							String titulo = rs.getString("titulo");
+							int n_temporada = rs.getInt("n_temporada");
+							int n_capitulos = rs.getInt("n_capitulos");
+			
+							if(current_serie == -1){
+								current_serie = id_serie;
+								result += titulo;
+							} else if(current_serie != id_serie){
+								
+							}
+							System.out.println(id_serie + titulo + n_temporada + n_capitulos);
+						
+							
+			}
+			
+			result += "}";
+			return "";
+		} catch(SQLException se) {
+			System.out.println("Mensaje de error: " + se.getMessage() );
+			System.out.println("Código de error: " + se.getErrorCode() );
+			System.out.println("Estado SQL: " + se.getSQLState() );
+			se.printStackTrace();
+			return null;
+		}
+				   				  
 	}
 
 	public double mediaGenero(String genero) {
