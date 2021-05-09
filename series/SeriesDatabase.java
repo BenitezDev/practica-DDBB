@@ -1,8 +1,7 @@
 package series;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
+
 import java.io.FileReader;
 import java.io.IOException;
 import java.sql.Connection;
@@ -10,18 +9,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.stream.Collectors;
 
-import com.mysql.jdbc.exceptions.MySQLSyntaxErrorException;
 
 public class SeriesDatabase {
 
@@ -119,7 +107,7 @@ public class SeriesDatabase {
 
 		} catch(SQLException se) {
 			System.out.println("Mensaje de error: " + se.getMessage() );
-			System.out.println("C�digo de error: " + se.getErrorCode() );
+			System.out.println("Código de error: " + se.getErrorCode() );
 			System.out.println("Estado SQL: " + se.getSQLState() );
 			se.printStackTrace();
 			return false;
@@ -155,7 +143,7 @@ public class SeriesDatabase {
 
 		} catch(SQLException se) {
 			System.out.println("Mensaje de error: " + se.getMessage() );
-			System.out.println("C�digo de error: " + se.getErrorCode() );
+			System.out.println("Código de error: " + se.getErrorCode() );
 			System.out.println("Estado SQL: " + se.getSQLState() );
 			se.printStackTrace();
 			return false;
@@ -219,7 +207,7 @@ public class SeriesDatabase {
 		{
 			se.printStackTrace();
 			System.out.println("Mensaje de error: " + se.getMessage() );
-			System.out.println("C�digo de error: " + se.getErrorCode() );
+			System.out.println("Código de error: " + se.getErrorCode() );
 			System.out.println("Estado SQL: " + se.getSQLState() );
 			newEntries = 0;
 		}
@@ -292,7 +280,7 @@ public class SeriesDatabase {
 		{
 			se.printStackTrace();
 			System.out.println("Mensaje de error: " + se.getMessage() );
-			System.out.println("C�digo de error: " + se.getErrorCode() );
+			System.out.println("Código de error: " + se.getErrorCode() );
 			System.out.println("Estado SQL: " + se.getSQLState() );
 
 			newEntries = 0;
@@ -375,7 +363,7 @@ public class SeriesDatabase {
 			
 		} catch(SQLException se) {
 			System.out.println("Mensaje de error: " + se.getMessage() );
-			System.out.println("C�digo de error: " + se.getErrorCode() );
+			System.out.println("Código de error: " + se.getErrorCode() );
 			System.out.println("Estado SQL: " + se.getSQLState() );
 			se.printStackTrace();
 			return null;
