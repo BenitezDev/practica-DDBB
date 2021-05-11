@@ -375,14 +375,14 @@ public class SeriesDatabase {
 		
 		String query1 =  "SELECT COUNT(DISTINCT genero.descripcion) Existe " +
 						 "FROM genero " +
-						 "WHERE genero.descripcion = '?';";
+						 "WHERE genero.descripcion = ? ;";
 		
 		String query2 =  "SELECT COUNT(valora.id_serie) caps, AVG(valor) ValMedia " +
 				 		 "FROM valora " +
 				 		 "INNER JOIN serie ON serie.id_serie = valora.id_serie " +
 				 		 "INNER JOIN pertenece ON pertenece.id_serie = valora.id_serie " +
 				 		 "INNER JOIN genero ON pertenece.id_genero = genero.id_genero " +
-				 		 "WHERE genero.descripcion = '?';";
+				 		 "WHERE genero.descripcion = ? ;";
 
 		try {
 
@@ -391,9 +391,15 @@ public class SeriesDatabase {
 
 			pst1.setString(1,  genero);
 
-			ResultSet rs = 	pst1.executeQuery(query1);
+			ResultSet rs = 	pst1.executeQuery();
+			
+			rs.next();
 
 			int existe = rs.getInt("Existe");
+			
+			System.out.println("La query de comprobacion funciona");
+			
+			
 			
 			
 			if(existe <= 0){
@@ -405,7 +411,9 @@ public class SeriesDatabase {
 
 				pst1.setString(1,  genero);
 
-			    rs = pst1.executeQuery(query2);
+			    rs = pst1.executeQuery();
+			    
+			    rs.next();
 				
 				float valmedia = rs.getFloat("ValMedia");
 				
