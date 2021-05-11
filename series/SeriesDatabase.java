@@ -1,7 +1,6 @@
 package series;
 
 import java.io.BufferedReader;
-
 import java.io.FileReader;
 import java.io.IOException;
 import java.sql.Connection;
@@ -9,6 +8,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 
 public class SeriesDatabase {
@@ -92,15 +92,16 @@ public class SeriesDatabase {
 						"FOREIGN KEY (id_serie, n_temporada) REFERENCES temporada (id_serie, n_temporada)" +
 						"ON DELETE CASCADE ON UPDATE CASCADE);";
 
-
-
-
+//
+//		Statement st = conn.createStatement();
+//		Statement st = conn.createStatement();
+//		int result = st.executeUpdate(query);
 		try {
 
-			PreparedStatement pst = conn.prepareStatement(query);
+			
+			Statement st = conn.createStatement();
 
-
-			int result = pst.executeUpdate(query);
+			int result = st.executeUpdate(query);
 			System.out.println("Numero de filas afectadas: " + result);
 			System.out.println("La query ha sido ejecutada.");
 			return true;
@@ -134,9 +135,9 @@ public class SeriesDatabase {
 
 		try {
 
-			PreparedStatement pst = conn.prepareStatement(query);
+			Statement st = conn.createStatement();
 
-			int result = pst.executeUpdate(query);
+			int result = st.executeUpdate(query);
 			System.out.println("Numero de filas afectadas: " + result);
 			System.out.println("La query ha sido ejecutada.");
 			return true;
@@ -301,8 +302,8 @@ public class SeriesDatabase {
 
 		try {
 
-			PreparedStatement pst = conn.prepareStatement(query);
-			ResultSet rs = pst.executeQuery(query);
+			Statement st = conn.createStatement();
+			ResultSet rs = st.executeQuery(query);
 
 			String result = "{";
 
@@ -343,13 +344,7 @@ public class SeriesDatabase {
 				{
 					result += n_capitulos;	
 				}
-
-
-							
-
 			}
-			
-
 			
 			if (result.charAt(result.length() -1) == ']'){
 				result += "}";
@@ -372,10 +367,75 @@ public class SeriesDatabase {
 	}
 
 	public double mediaGenero(String genero) {
-		return 0.0;
+		
+		openConnection();
+		
+		
+	
+		
+		String query1 =  "SELECT COUNT(DISTINCT genero.descripcion) Existe " +
+						 "FROM genero " +
+						 "WHERE genero.descripcion = '?';";
+		
+		String query2 =  "SELECT COUNT(valora.id_serie) caps, AVG(valor) ValMedia " +
+				 		 "FROM valora " +
+				 		 "INNER JOIN serie ON serie.id_serie = valora.id_serie " +
+				 		 "INNER JOIN pertenece ON pertenece.id_serie = valora.id_serie " +
+				 		 "INNER JOIN genero ON pertenece.id_genero = genero.id_genero " +
+				 		 "WHERE genero.descripcion = '?';";
+
+		try {
+
+
+			PreparedStatement pst1 = conn.prepareStatement(query1);
+
+			pst1.setString(1,  genero);
+
+			ResultSet rs = 	pst1.executeQuery(query1);
+
+			int existe = rs.getInt("Existe");
+			
+			
+			if(existe <= 0){
+				throw new Exception("No existe el genero");
+				
+			} else {
+				
+			    pst1 = conn.prepareStatement(query2);
+
+				pst1.setString(1,  genero);
+
+			    rs = pst1.executeQuery(query2);
+				
+				float valmedia = rs.getFloat("ValMedia");
+				
+				int caps = rs.getInt("caps");
+				
+				if(caps <= 0)
+					{return 0.0;}
+				
+				return valmedia;
+				
+			}
+
+
+
+		} catch (SQLException se) {
+			System.out.println("Mensaje de error: " + se.getMessage() );
+			System.out.println("Código de error: " + se.getErrorCode() );
+			System.out.println("Estado SQL: " + se.getSQLState() );
+			se.printStackTrace();
+			return -2;
+			
+		} catch (Exception e) {
+			return -1;
+
+		}
+		
 	}
 
 	public boolean setFoto(String filename) {
+		openConnection();
 		return false;
 	}
 
