@@ -1,8 +1,13 @@
 package series;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -444,7 +449,57 @@ public class SeriesDatabase {
 
 	public boolean setFoto(String filename) {
 		openConnection();
-		return false;
-	}
-
+		
+	        String query = "UPDATE usuario " + 
+	        			"SET fotografia = ? " + 
+	        			"WHERE apellido1 = 'Cabeza';";
+	        try {
+	            PreparedStatement pst = conn.prepareStatement(query);
+	           
+	           
+	            File file = new File("C:/Users/mvW10/Desktop/practica-DDBB/HomerSimpson.jpg");
+	            FileInputStream fis =new FileInputStream(file);
+	            pst.setBinaryStream(1, fis, (int)file.length());
+	            pst.executeUpdate();
+	            
+	            
+	            //PARA VER SI SE GUARDA CORRECTAMENTE LA FOTOGRAFIA EN LA BASE DE DATOS LA EXTRAIGO DE AHI
+//	            Statement st  = conn.createStatement();
+//	            ResultSet rs = st.executeQuery("select fotografia  from usuario where apellido1 = 'Cabeza';");
+//	            
+//	            byte data[] = null;
+//	            Blob myBlob = null;
+//	            
+//	            while(rs.next()){
+//	            	myBlob = rs.getBlob("fotografia");
+//	            	data = myBlob.getBytes(1, (int)myBlob.length());
+//	            }
+//	            
+//	            FileOutputStream fos = new FileOutputStream("C:/Users/mvW10/descarga.jpg");
+//	            fos.write(data);
+//	            fos.close();
+//	            System.out.println("fichero guardado");
+	            return true;
+	           
+	        } catch (SQLException se) {
+	        	System.out.println("Mensaje de error: " + se.getMessage() );
+				System.out.println("Código de error: " + se.getErrorCode() );
+				System.out.println("Estado SQL: " + se.getSQLState() );
+	            se.printStackTrace();
+	            return false;
+	        } catch (FileNotFoundException e) {
+	           
+	            System.out.println("No se encuentra el archivo");
+	            e.printStackTrace();
+	            return false;
+	        } catch (IOException e) {
+			
+				e.printStackTrace();
+				return false;
+			}
+	       
+	    }
+		
 }
+
+
