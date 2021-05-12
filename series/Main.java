@@ -71,7 +71,7 @@ public class Main {
 				break;
 			case '5':
 				System.out.println("Cargando imagen...");
-				series.setFoto("HomerSimpson.jpg.jpg");
+				series.setFoto("HomerSimpson.jpg");
 				break;
 			case '6':
 				System.out.println(series.openConnection());

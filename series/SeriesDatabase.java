@@ -457,8 +457,8 @@ public class SeriesDatabase {
 	            PreparedStatement pst = conn.prepareStatement(query);
 	           
 	           
-	            File file = new File("C:/Users/mvW10/Desktop/practica-DDBB/HomerSimpson.jpg");
-	            FileInputStream fis =new FileInputStream(file);
+	            File file = new File("src/" + filename);
+	            FileInputStream fis = new FileInputStream(file);
 	            pst.setBinaryStream(1, fis, (int)file.length());
 	            pst.executeUpdate();
 	            
@@ -475,7 +475,7 @@ public class SeriesDatabase {
 //	            	data = myBlob.getBytes(1, (int)myBlob.length());
 //	            }
 //	            
-//	            FileOutputStream fos = new FileOutputStream("C:/Users/mvW10/descarga.jpg");
+//	            FileOutputStream fos = new FileOutputStream("C:/Users/mvW10/Downloads/descarga.jpg");
 //	            fos.write(data);
 //	            fos.close();
 //	            System.out.println("fichero guardado");
