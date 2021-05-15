@@ -30,7 +30,7 @@ public class SeriesDatabase {
 		//String drv = "com.mysql.jdbc.Driver";
 		//Class.forName(drv);
 
-
+		//datos del usuario y servidor
 		String serverAddress = "localhost:3306";
 		String db = "series";
 		String user = "series_user";
@@ -61,7 +61,7 @@ public class SeriesDatabase {
 
 	public boolean closeConnection() {
 		
-		
+		//close connection
 		try {
 			conn.close();
 			conn = null;
@@ -70,7 +70,6 @@ public class SeriesDatabase {
 
 		} catch (Exception e) {
 			System.err.println("Error al desconectar " + e.getMessage());
-			//	        e.printStackTrace();
 			return false;
 		}
 
@@ -97,15 +96,11 @@ public class SeriesDatabase {
 						"FOREIGN KEY (id_serie, n_temporada) REFERENCES temporada (id_serie, n_temporada)" +
 						"ON DELETE CASCADE ON UPDATE CASCADE);";
 
-//
-//		Statement st = conn.createStatement();
-//		Statement st = conn.createStatement();
-//		int result = st.executeUpdate(query);
+		
 		try {
 
-			
+			//ejecuta la accion de crear tabla capitulo
 			Statement st = conn.createStatement();
-
 			int result = st.executeUpdate(query);
 			System.out.println("Numero de filas afectadas: " + result);
 			System.out.println("La query ha sido ejecutada.");
@@ -130,7 +125,7 @@ public class SeriesDatabase {
 						"fecha DATE," +
 						"id_serie INT," +
 						"n_temporada INT," +
-						"n_orden INT," +
+						"n_orden INT," + 
 						"id_usuario INT," +
 						"valor INT," +
 						"PRIMARY KEY (fecha, id_serie, n_temporada, n_orden, id_usuario)," +
@@ -139,9 +134,8 @@ public class SeriesDatabase {
 						"ON DELETE CASCADE ON UPDATE CASCADE);";
 
 		try {
-
+			//ejecuta la accion de crear tabla valora
 			PreparedStatement pst = conn.prepareStatement(query);
-
 			int result = pst.executeUpdate(query);
 			System.out.println("Numero de filas afectadas: " + result);
 			System.out.println("La query ha sido ejecutada.");
@@ -176,7 +170,7 @@ public class SeriesDatabase {
 
 				String linea = bufferLectura.readLine();
 				linea = bufferLectura.readLine();// no queremos la cabezera del .csv
-				PreparedStatement ps; //  = conn.prepareStatement()
+				PreparedStatement ps;
 
 				while (linea != null) 
 				{
@@ -241,23 +235,15 @@ public class SeriesDatabase {
 				String linea = bufferLectura.readLine();
 				linea = bufferLectura.readLine();// no queremos la cabezera del .csv
 
-				PreparedStatement ps; //  = conn.prepareStatement()
+				PreparedStatement ps; 
 
-				//				int x = 0;
+				//			
 
 
 				int x = 0;
-				while (linea != null) 
-				{
-					//					if(x >= 33)
-					//					{
-					//						break;
-					//					}
-
+				while (linea != null) {
 					String[] campo = linea.split(";"); 
-
 					ps = conn.prepareStatement(insert_query);
-
 
 					// lo mismo interesa pasar los numeros como string y no hacer la basura del valueOf
 					ps.setInt	(1, Integer.valueOf(campo[0]));
@@ -292,7 +278,7 @@ public class SeriesDatabase {
 			newEntries = 0;
 		}
 
-		System.out.println("Se han a�adido " + newEntries);
+		System.out.println("Se han anyadido " + newEntries);
 		return newEntries;
 	}
 
@@ -317,7 +303,7 @@ public class SeriesDatabase {
 
 			
 
-			while (rs.next()) {
+			while (rs.next()) {//mientras que haya filas siga ejecutandose
 				
 				int id_serie = rs.getInt("id_serie");
 				String titulo = rs.getString("titulo");
@@ -374,9 +360,6 @@ public class SeriesDatabase {
 	public double mediaGenero(String genero) {
 		
 		openConnection();
-		
-		
-	
 		
 		String query1 =  "SELECT COUNT(DISTINCT genero.descripcion) Existe " +
 						 "FROM genero " +
