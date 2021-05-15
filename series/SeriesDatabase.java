@@ -60,8 +60,8 @@ public class SeriesDatabase {
 	}
 
 	public boolean closeConnection() {
-
-
+		
+		
 		try {
 			conn.close();
 			conn = null;
@@ -140,9 +140,9 @@ public class SeriesDatabase {
 
 		try {
 
-			Statement st = conn.createStatement();
+			PreparedStatement pst = conn.prepareStatement(query);
 
-			int result = st.executeUpdate(query);
+			int result = pst.executeUpdate(query);
 			System.out.println("Numero de filas afectadas: " + result);
 			System.out.println("La query ha sido ejecutada.");
 			return true;
