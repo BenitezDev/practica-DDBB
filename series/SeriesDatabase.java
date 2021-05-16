@@ -96,11 +96,11 @@ public class SeriesDatabase {
 						"FOREIGN KEY (id_serie, n_temporada) REFERENCES temporada (id_serie, n_temporada)" +
 						"ON DELETE CASCADE ON UPDATE CASCADE);";
 
-		
+		Statement st = null;
 		try {
 
 			//ejecuta la accion de crear tabla capitulo
-			Statement st = conn.createStatement();
+			st = conn.createStatement();
 			int result = st.executeUpdate(query);
 			System.out.println("Numero de filas afectadas: " + result);
 			System.out.println("La query ha sido ejecutada.");
@@ -112,6 +112,17 @@ public class SeriesDatabase {
 			System.out.println("Estado SQL: " + se.getSQLState() );
 			se.printStackTrace();
 			return false;
+		}catch(Exception e){
+			System.out.println("Se produjo un error inesperado");
+			return false;
+		}finally{
+			try{
+				System.out.println("Ejecuto finally \n");
+				if(st!=null) st.close();
+			}catch(SQLException e){
+				e.printStackTrace();
+
+			}
 		}
 
 	}
@@ -132,10 +143,11 @@ public class SeriesDatabase {
 						"FOREIGN KEY (id_serie, n_temporada, n_orden) REFERENCES capitulo (id_serie, n_temporada, n_orden)," +
 						"FOREIGN KEY (id_usuario) REFERENCES usuario (id_usuario)" +
 						"ON DELETE CASCADE ON UPDATE CASCADE);";
-
+		
+		PreparedStatement pst = null;
 		try {
 			//ejecuta la accion de crear tabla valora
-			PreparedStatement pst = conn.prepareStatement(query);
+			pst = conn.prepareStatement(query);
 			int result = pst.executeUpdate(query);
 			System.out.println("Numero de filas afectadas: " + result);
 			System.out.println("La query ha sido ejecutada.");
@@ -147,6 +159,17 @@ public class SeriesDatabase {
 			System.out.println("Estado SQL: " + se.getSQLState() );
 			se.printStackTrace();
 			return false;
+		}catch(Exception e){
+			System.out.println("Se produjo un error inesperado");
+			return false;
+		}finally{
+			try{
+				System.out.println("Ejecuto finally \n");
+				if(pst!=null) pst.close();
+			}catch(SQLException e){
+				e.printStackTrace();
+
+			}
 		}
 	}
 
@@ -157,12 +180,13 @@ public class SeriesDatabase {
 		openConnection();
 
 		int newEntries = 0;
-
+		PreparedStatement ps=null;;
 		// SQL
 		try{
 			conn.setAutoCommit(false);
 
 			// Try to load the .csv
+			
 			try (BufferedReader bufferLectura = new BufferedReader(new FileReader(fileName));)
 			{
 				String insert_query = 	"INSERT INTO capitulo (id_serie, n_temporada,n_orden, fecha, titulo, duracion)" + 
@@ -170,7 +194,7 @@ public class SeriesDatabase {
 
 				String linea = bufferLectura.readLine();
 				linea = bufferLectura.readLine();// no queremos la cabezera del .csv
-				PreparedStatement ps;
+				
 
 				while (linea != null) 
 				{
@@ -210,6 +234,16 @@ public class SeriesDatabase {
 			System.out.println("Código de error: " + se.getErrorCode() );
 			System.out.println("Estado SQL: " + se.getSQLState() );
 			newEntries = 0;
+		}catch(Exception e){
+			System.out.println("Se produjo un error inesperado");
+		}finally{
+			try{
+				System.out.println("Ejecuto finally \n");
+				if(ps!=null) ps.close();
+			}catch(SQLException e){
+				e.printStackTrace();
+
+			}
 		}
 
 		System.out.println("Se han a�adido " + newEntries);
@@ -221,11 +255,11 @@ public class SeriesDatabase {
 		openConnection();
 
 		int newEntries = 0;
-
+		PreparedStatement ps=null;
 		// SQL
 		try{
 			conn.setAutoCommit(true); // por si las moscas. no es necesario
-
+			
 			// Try to load the .csv
 			try (BufferedReader bufferLectura = new BufferedReader(new FileReader(fileName));)
 			{
@@ -235,7 +269,7 @@ public class SeriesDatabase {
 				String linea = bufferLectura.readLine();
 				linea = bufferLectura.readLine();// no queremos la cabezera del .csv
 
-				PreparedStatement ps; 
+				 
 
 				//			
 
@@ -276,6 +310,16 @@ public class SeriesDatabase {
 			System.out.println("Estado SQL: " + se.getSQLState() );
 
 			newEntries = 0;
+		}catch(Exception e){
+			System.out.println("Se produjo un error inesperado");
+		}finally{
+			try{
+				System.out.println("Ejecuto finally \n");
+				if(ps!=null) ps.close();
+			}catch(SQLException e){
+				e.printStackTrace();
+
+			}
 		}
 
 		System.out.println("Se han anyadido " + newEntries);
@@ -290,11 +334,13 @@ public class SeriesDatabase {
 				"FROM temporada " +
 				"INNER JOIN serie ON temporada.id_serie = serie.id_serie " +
 				"ORDER BY temporada.id_serie, temporada.n_temporada ;";
-
+		
+		Statement st = null;
+		ResultSet rs=null;
 		try {
 
-			Statement st = conn.createStatement();
-			ResultSet rs = st.executeQuery(query);
+			st = conn.createStatement();
+			rs = st.executeQuery(query);
 
 			String result = "{";
 
@@ -353,6 +399,18 @@ public class SeriesDatabase {
 			System.out.println("Estado SQL: " + se.getSQLState() );
 			se.printStackTrace();
 			return null;
+		}catch(Exception e){
+			System.out.println("Se produjo un error inesperado");
+			return null;
+		}finally{
+			try{
+				System.out.println("Ejecuto finally \n");
+				if(st!=null) st.close();
+				if(rs!=null) rs.close();
+			}catch(SQLException e){
+				e.printStackTrace();
+
+			}
 		}
 
 	}
@@ -371,15 +429,17 @@ public class SeriesDatabase {
 				 		 "INNER JOIN pertenece ON pertenece.id_serie = valora.id_serie " +
 				 		 "INNER JOIN genero ON pertenece.id_genero = genero.id_genero " +
 				 		 "WHERE genero.descripcion = ? ;";
-
+		
+		PreparedStatement pst1=null;
+		ResultSet rs = null;
 		try {
 
 
-			PreparedStatement pst1 = conn.prepareStatement(query1);
+			pst1 = conn.prepareStatement(query1);
 
 			pst1.setString(1,  genero);
 
-			ResultSet rs = 	pst1.executeQuery();
+			rs = 	pst1.executeQuery();
 			
 			rs.next();
 
@@ -426,6 +486,15 @@ public class SeriesDatabase {
 		} catch (Exception e) {
 			return -1;
 
+		}finally{
+			try{
+				System.out.println("Ejecuto finally \n");
+				if(pst1!=null) pst1.close();
+				if(rs!=null) rs.close();
+			}catch(SQLException e){
+				e.printStackTrace();
+
+			}
 		}
 		
 	}
@@ -436,8 +505,10 @@ public class SeriesDatabase {
 	        String query = "UPDATE usuario " + 
 	        			"SET fotografia = ? " + 
 	        			"WHERE apellido1 = 'Cabeza';";
+	        
+	        PreparedStatement pst=null;
 	        try {
-	            PreparedStatement pst = conn.prepareStatement(query);
+	            pst = conn.prepareStatement(query);
 	           
 	           
 	            File file = new File("src/" + filename);
@@ -479,6 +550,14 @@ public class SeriesDatabase {
 			
 				e.printStackTrace();
 				return false;
+			}finally{
+				try{
+					System.out.println("Ejecuto finally \n");
+					if(pst!=null) pst.close();
+				}catch(SQLException e){
+					e.printStackTrace();
+
+				}
 			}
 	       
 	    }
