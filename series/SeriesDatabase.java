@@ -100,14 +100,12 @@ public class SeriesDatabase {
 						"FOREIGN KEY (id_serie, n_temporada) REFERENCES temporada (id_serie, n_temporada)" +
 						"ON DELETE CASCADE ON UPDATE CASCADE);";
 
-
+		Statement st = null;
 		try {
 
-			// We open the Statement resource
-			Statement st = conn.createStatement();
-
-			// We dump the result in an integer to check if it agrees with our interests. It must return 0 because not
+			st = conn.createStatement();
 			// we modify anything existing
+			// We dump the result in an integer to check if it agrees with our interests. It must return 0 because not
 			int result = st.executeUpdate(query);
 			System.out.println("Numero de filas afectadas: " + result);
 			System.out.println("La query ha sido ejecutada.");
@@ -120,6 +118,17 @@ public class SeriesDatabase {
 			System.out.println("Estado SQL: " + se.getSQLState() );
 			se.printStackTrace();
 			return false;
+		}catch(Exception e){
+			System.out.println("Se produjo un error inesperado");
+			return false;
+		}finally{
+			try{
+				System.out.println("Ejecuto finally \n");
+				if(st!=null) st.close();
+			}catch(SQLException e){
+				e.printStackTrace();
+
+			}
 		}
 
 	}
@@ -137,19 +146,18 @@ public class SeriesDatabase {
 						"fecha DATE," +
 						"id_serie INT," +
 						"n_temporada INT," +
-						"n_orden INT," +
+						"n_orden INT," + 
 						"id_usuario INT," +
 						"valor INT," +
 						"PRIMARY KEY (fecha, id_serie, n_temporada, n_orden, id_usuario)," +
 						"FOREIGN KEY (id_serie, n_temporada, n_orden) REFERENCES capitulo (id_serie, n_temporada, n_orden)," +
 						"FOREIGN KEY (id_usuario) REFERENCES usuario (id_usuario)" +
 						"ON DELETE CASCADE ON UPDATE CASCADE);";
-		
+		PreparedStatement pst = null;
 		try {
 			// As in the previous method we use Statement class because we do not have parameters in the query
-			Statement st = conn.createStatement();
-
-			int result = st.executeUpdate(query);
+			int result = pst.executeUpdate(query);
+			pst = conn.prepareStatement(query);
 			System.out.println("Numero de filas afectadas: " + result);
 			System.out.println("La query ha sido ejecutada.");
 			return true;
@@ -161,6 +169,17 @@ public class SeriesDatabase {
 			System.out.println("Estado SQL: " + se.getSQLState() );
 			se.printStackTrace();
 			return false;
+		}catch(Exception e){
+			System.out.println("Se produjo un error inesperado");
+			return false;
+		}finally{
+			try{
+				System.out.println("Ejecuto finally \n");
+				if(pst!=null) pst.close();
+			}catch(SQLException e){
+				e.printStackTrace();
+
+			}
 		}
 	}
 
@@ -172,13 +191,14 @@ public class SeriesDatabase {
 		
 		// Counter to see how many items we have added to the database
 		int newEntries = 0;
-
+		PreparedStatement ps=null;;
 		// SQL
 		try{
 			// We need to do all the insert in one transaction so we set Autocommit to false in order to avoid that the commit occurs in each step.
 			conn.setAutoCommit(false);
 
 			// Try to load the .csv
+			
 			try (BufferedReader bufferLectura = new BufferedReader(new FileReader(fileName));)
 			{
 				
@@ -186,13 +206,10 @@ public class SeriesDatabase {
 						"VALUES (?,?,?,?,?,?);";
 
 				String linea = bufferLectura.readLine();
-				
 				// WE do not want to read the very first line of the document because it contains useless text.
 				linea = bufferLectura.readLine(); 
-				
 				// In this case we have to use PreparedStatement because we have some parameters in the query that we want to fill in a loop
 				// to make it more efficient
-				PreparedStatement ps; 
 
 				
 				while (linea != null) 
@@ -234,9 +251,19 @@ public class SeriesDatabase {
 			System.out.println("Codigo de error: " + se.getErrorCode() );
 			System.out.println("Estado SQL: " + se.getSQLState() );
 			newEntries = 0;
+		}catch(Exception e){
+			System.out.println("Se produjo un error inesperado");
+		}finally{
+			try{
+				System.out.println("Ejecuto finally \n");
+				if(ps!=null) ps.close();
+			}catch(SQLException e){
+				e.printStackTrace();
+
+			}
 		}
 
-		System.out.println("Se han añadido " + newEntries);
+		System.out.println("Se han aï¿½adido " + newEntries);
 		return newEntries;
 	}
 
@@ -245,7 +272,7 @@ public class SeriesDatabase {
 		openConnection();
 
 		int newEntries = 0;
-
+		PreparedStatement ps=null;
 		// SQL
 		try{
 			// Now we need to make a commit in each insert so we want to be sure that Autocommit is activated
@@ -260,21 +287,14 @@ public class SeriesDatabase {
 				String linea = bufferLectura.readLine();
 				linea = bufferLectura.readLine();// no queremos la cabezera del .csv
 
-				PreparedStatement ps; //  = conn.prepareStatement()
+				 
 
-				//				int x = 0;
+				//			
 
 
 				int x = 0;
-				while (linea != null) 
-				{
-					//					if(x >= 33)
-					//					{
-					//						break;
-					//					}
-
+				while (linea != null) {
 					String[] campo = linea.split(";"); 
-
 					ps = conn.prepareStatement(insert_query);
 
 
@@ -308,9 +328,19 @@ public class SeriesDatabase {
 			System.out.println("Estado SQL: " + se.getSQLState() );
 
 			newEntries = 0;
+		}catch(Exception e){
+			System.out.println("Se produjo un error inesperado");
+		}finally{
+			try{
+				System.out.println("Ejecuto finally \n");
+				if(ps!=null) ps.close();
+			}catch(SQLException e){
+				e.printStackTrace();
+
+			}
 		}
 
-		System.out.println("Se han aï¿½adido " + newEntries);
+		System.out.println("Se han anyadido " + newEntries);
 		return newEntries;
 	}
 
@@ -323,15 +353,16 @@ public class SeriesDatabase {
 				"FROM temporada " +
 				"INNER JOIN serie ON temporada.id_serie = serie.id_serie " +
 				"ORDER BY temporada.id_serie, temporada.n_temporada ;";
-
+		
+		Statement st = null;
+		ResultSet rs=null;
 		try {
 
 			// We define in SQL language the query that we are going to perform in the database
 			// As it does not have parameters, we use the Statement class
-			Statement st = conn.createStatement();
-			
 			//We have to use the ResultSet class in order to display the result on the terminal
-			ResultSet rs = st.executeQuery(query);
+			st = conn.createStatement();
+			rs = st.executeQuery(query);
 
 			String result = "{";
 
@@ -342,7 +373,7 @@ public class SeriesDatabase {
 
 			
 
-			while (rs.next()) {
+			while (rs.next()) {//mientras que haya filas siga ejecutandose
 				
 				int id_serie = rs.getInt("id_serie");
 				String titulo = rs.getString("titulo");
@@ -399,6 +430,18 @@ public class SeriesDatabase {
 			System.out.println("Estado SQL: " + se.getSQLState() );
 			se.printStackTrace();
 			return null;
+		}catch(Exception e){
+			System.out.println("Se produjo un error inesperado");
+			return null;
+		}finally{
+			try{
+				System.out.println("Ejecuto finally \n");
+				if(st!=null) st.close();
+				if(rs!=null) rs.close();
+			}catch(SQLException e){
+				e.printStackTrace();
+
+			}
 		}
 
 	}
@@ -406,9 +449,6 @@ public class SeriesDatabase {
 	public double mediaGenero(String genero) {
 		
 		openConnection();
-		
-		
-	
 		
 		String query1 =  "SELECT COUNT(DISTINCT genero.descripcion) Existe " +
 						 "FROM genero " +
@@ -420,16 +460,18 @@ public class SeriesDatabase {
 				 		 "INNER JOIN pertenece ON pertenece.id_serie = valora.id_serie " +
 				 		 "INNER JOIN genero ON pertenece.id_genero = genero.id_genero " +
 				 		 "WHERE genero.descripcion = ? ;";
-
+		
+		PreparedStatement pst1=null;
+		ResultSet rs = null;
 		try {
 
-			// We have to use PreparedStatement because we have parameters in both queries. 
 			// First query is going to check if the film genre that the user will pass exits in the DataBase using a counter
-			PreparedStatement pst1 = conn.prepareStatement(query1);
+			// We have to use PreparedStatement because we have parameters in both queries. 
+			pst1 = conn.prepareStatement(query1);
 
 			pst1.setString(1,  genero);
 
-			ResultSet rs = 	pst1.executeQuery();
+			rs = 	pst1.executeQuery();
 			
 			// We know that rs is pointing to and empty place just above the first element of the table so we have to use the next() method to go one row below
 			rs.next();
@@ -477,6 +519,15 @@ public class SeriesDatabase {
 		} catch (Exception e) {
 			return -1;
 
+		}finally{
+			try{
+				System.out.println("Ejecuto finally \n");
+				if(pst1!=null) pst1.close();
+				if(rs!=null) rs.close();
+			}catch(SQLException e){
+				e.printStackTrace();
+
+			}
 		}
 		
 	}
@@ -487,9 +538,11 @@ public class SeriesDatabase {
 	        String query = "UPDATE usuario " + 
 	        			"SET fotografia = ? " + 
 	        			"WHERE apellido1 = 'Cabeza';";
+	        
+	        PreparedStatement pst=null;
 	        try {
 	        	// For security we want to take the image as a parameter so we have to use PreparedStatement
-	            PreparedStatement pst = conn.prepareStatement(query);
+	            pst = conn.prepareStatement(query);
 	           
 	            // We read the file and we introduce it in the query to execute the query
 	            File file = new File("src/" + filename);
@@ -527,6 +580,18 @@ public class SeriesDatabase {
 	            System.out.println("No se encuentra el archivo");
 	            e.printStackTrace();
 	            return false;
+	        } catch (IOException e) {
+			
+				e.printStackTrace();
+				return false;
+			}finally{
+				try{
+					System.out.println("Ejecuto finally \n");
+					if(pst!=null) pst.close();
+				}catch(SQLException e){
+					e.printStackTrace();
+
+				}
 			}
 	       
 	    }
