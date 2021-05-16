@@ -335,6 +335,8 @@ public class SeriesDatabase {
 
 			String result = "{";
 
+			
+			// These two parameters will help to establish a difference between two different series as we check serie_id and n_temporada
 			int current_serie     = -1;
 			int current_temporada = -1;
 
@@ -347,10 +349,16 @@ public class SeriesDatabase {
 				int n_temporada = rs.getInt("n_temporada");
 				int n_capitulos = rs.getInt("n_capitulos");
 
+				
+				
+				// All these if's basically study all the possible cases (no series in the database or no chapters in a series)
+				// On each case we have to write something different
 				if(current_serie != id_serie){
 					if(current_temporada != -1){
 						result += "],";
-					}else if(result.charAt(result.length() -1) == ']'){
+					
+					} // With charAt we can check what is the last character of the string in order to complete it correctly
+					else if(result.charAt(result.length() -1) == ']'){
 						result += ",";
 					}
 
@@ -381,7 +389,8 @@ public class SeriesDatabase {
 			}else{
 				result += "]}";	
 			}
-
+			
+			// The result string has spaces instead of _ so we need to change them
 			return result.replaceAll(" ", "_");
 			
 		} catch(SQLException se) {
