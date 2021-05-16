@@ -104,8 +104,9 @@ public class SeriesDatabase {
 		try {
 
 			st = conn.createStatement();
-			// we modify anything existing
+			
 			// We dump the result in an integer to check if it agrees with our interests. It must return 0 because not
+			// we modify anything existing
 			int result = st.executeUpdate(query);
 			System.out.println("Numero de filas afectadas: " + result);
 			System.out.println("La query ha sido ejecutada.");
@@ -153,11 +154,12 @@ public class SeriesDatabase {
 						"FOREIGN KEY (id_serie, n_temporada, n_orden) REFERENCES capitulo (id_serie, n_temporada, n_orden)," +
 						"FOREIGN KEY (id_usuario) REFERENCES usuario (id_usuario)" +
 						"ON DELETE CASCADE ON UPDATE CASCADE);";
-		PreparedStatement pst = null;
+		Statement st = null;
 		try {
 			// As in the previous method we use Statement class because we do not have parameters in the query
-			int result = pst.executeUpdate(query);
-			pst = conn.prepareStatement(query);
+			st = conn.createStatement();
+			int result = st.executeUpdate(query);
+			
 			System.out.println("Numero de filas afectadas: " + result);
 			System.out.println("La query ha sido ejecutada.");
 			return true;
@@ -175,7 +177,7 @@ public class SeriesDatabase {
 		}finally{
 			try{
 				System.out.println("Ejecuto finally \n");
-				if(pst!=null) pst.close();
+				if(st!=null) st.close();
 			}catch(SQLException e){
 				e.printStackTrace();
 
@@ -372,8 +374,8 @@ public class SeriesDatabase {
 			int current_temporada = -1;
 
 			
-
-			while (rs.next()) {//mientras que haya filas siga ejecutandose
+			// Until we reach the end of the table we need to execute the while
+			while (rs.next()) {
 				
 				int id_serie = rs.getInt("id_serie");
 				String titulo = rs.getString("titulo");
@@ -461,7 +463,7 @@ public class SeriesDatabase {
 				 		 "INNER JOIN genero ON pertenece.id_genero = genero.id_genero " +
 				 		 "WHERE genero.descripcion = ? ;";
 		
-		PreparedStatement pst1=null;
+		PreparedStatement pst1 = null;
 		ResultSet rs = null;
 		try {
 
@@ -471,7 +473,7 @@ public class SeriesDatabase {
 
 			pst1.setString(1,  genero);
 
-			rs = 	pst1.executeQuery();
+			rs = pst1.executeQuery();
 			
 			// We know that rs is pointing to and empty place just above the first element of the table so we have to use the next() method to go one row below
 			rs.next();
@@ -479,6 +481,9 @@ public class SeriesDatabase {
 			int existe = rs.getInt("Existe");
 			
 			System.out.println("La query de comprobacion funciona");
+			
+			pst1.close();
+			rs.close();
 			
 		
 			if(existe <= 0){
