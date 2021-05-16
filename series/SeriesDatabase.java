@@ -18,28 +18,27 @@ import java.sql.Statement;
 
 public class SeriesDatabase {
 
+	// Connection to database
 	private Connection conn;
 
 	public SeriesDatabase() {
 
 	}
 	
+	/**
+	* Open a connection to the databse
+	* @return  if the connections is establish return true, if no connection is establish
+	*/
 	public boolean openConnection() {
-
-
-		//String drv = "com.mysql.jdbc.Driver";
-		//Class.forName(drv);
 
 		// We open the connection with the data provided in the user and pass
 		String serverAddress = "localhost:3306";
-		String db = "series";
+		String db 	= "series"     ;
 		String user = "series_user";
 		String pass = "series_pass";
-		String url = "jdbc:mysql://" + serverAddress + "/" + db;
-
+		String url 	= "jdbc:mysql://" + serverAddress + "/" + db;
 
 		try{
-
 			// We check if a connection has been opened before
 			if(conn != null){
 				System.out.println("Anteriormente conectado");
@@ -51,15 +50,24 @@ public class SeriesDatabase {
 
 			return true;
 		
-		} catch(Exception e){
-			System.err.println("Error al conectar la BD" + e.getMessage());
-			e.printStackTrace();
+		} 
+		catch(SQLException se)
+		{
+			// In case of error we call to the SQL compiler so we can Know if there is anything wrong with the Workbench
+			System.out.println("Mensaje de error: " + se.getMessage() );
+			System.out.println("Codigo de error: " + se.getErrorCode() );
+			System.out.println("Estado SQL: " + se.getSQLState() );
 			return false;
-		}
-		
-		
+		} catch(Exception e){
+			System.err.println("Se produjo un error inesperado: " + e.getMessage());
+			return false;
+		}	
 	}
 
+	/**
+	* Close the connection to the databse
+	* @return  if the connection has been closed, return true and if there is any exception return false.
+	*/
 	public boolean closeConnection() {
 		
 		// We close the connection and take it to the null state to be able to work with it and check if it is closed.
@@ -74,11 +82,12 @@ public class SeriesDatabase {
 			e.printStackTrace();
 			return false;
 		}
-
-
-
 	}
 
+	/**
+	* Create the Capitulo table in the database
+	* @return if the table is create correctly, return true, if there is any problem, return false
+	*/
 	public boolean createTableCapitulo() {
 
 		// We open connection in case it has not been opened previously
@@ -90,21 +99,20 @@ public class SeriesDatabase {
 		String query =  
 
 				"CREATE TABLE capitulo ( " +
-						"id_serie INT," +
+						"id_serie INT,"    +
 						"n_temporada INT," +
-						"n_orden INT," +
-						"duracion INT," +
+						"n_orden INT,"     +
+						"duracion INT,"    +
 						"titulo VARCHAR(100)," +
-						"fecha DATE," +
+						"fecha DATE,"      +
 						"PRIMARY KEY (id_serie, n_temporada, n_orden)," +
 						"FOREIGN KEY (id_serie, n_temporada) REFERENCES temporada (id_serie, n_temporada)" +
 						"ON DELETE CASCADE ON UPDATE CASCADE);";
 
 		Statement st = null;
+		
 		try {
-
 			st = conn.createStatement();
-			
 			// We dump the result in an integer to check if it agrees with our interests. It must return 0 because not
 			// we modify anything existing
 			int result = st.executeUpdate(query);
@@ -114,9 +122,9 @@ public class SeriesDatabase {
 
 		} catch(SQLException se) {
 			// In case of error we call to the SQL compiler so we can Know if there is anything wrong with the Workbench
-			System.out.println("Mensaje de error: " + se.getMessage() );
-			System.out.println("Código de error: " + se.getErrorCode() );
-			System.out.println("Estado SQL: " + se.getSQLState() );
+			System.out.println("Mensaje de error: " + se.getMessage()  );
+			System.out.println("Código de error: "  + se.getErrorCode());
+			System.out.println("Estado SQL: "       + se.getSQLState() );
 			se.printStackTrace();
 			return false;
 		}catch(Exception e){
@@ -128,33 +136,35 @@ public class SeriesDatabase {
 				if(st!=null) st.close();
 			}catch(SQLException e){
 				e.printStackTrace();
-
 			}
 		}
-
 	}
 	
+	/**
+	* Create the Valora table in the database
+	* @return if the table is create correctly, return true, if there is any problem, return false
+	*/
 	public boolean createTableValora() {
-		
 		
 		// We open connection in case it has not been opened previously
 		openConnection();
 		
-		
 		String query =  
 
-				"CREATE TABLE valora ( " +
-						"fecha DATE," +
-						"id_serie INT," +
+				"CREATE TABLE valora ( "   +
+						"fecha DATE,"      +
+						"id_serie INT,"    +
 						"n_temporada INT," +
-						"n_orden INT," + 
-						"id_usuario INT," +
-						"valor INT," +
+						"n_orden INT,"     + 
+						"id_usuario INT,"  +
+						"valor INT,"       +
 						"PRIMARY KEY (fecha, id_serie, n_temporada, n_orden, id_usuario)," +
 						"FOREIGN KEY (id_serie, n_temporada, n_orden) REFERENCES capitulo (id_serie, n_temporada, n_orden)," +
 						"FOREIGN KEY (id_usuario) REFERENCES usuario (id_usuario)" +
 						"ON DELETE CASCADE ON UPDATE CASCADE);";
+		
 		Statement st = null;
+
 		try {
 			// As in the previous method we use Statement class because we do not have parameters in the query
 			st = conn.createStatement();
@@ -186,36 +196,42 @@ public class SeriesDatabase {
 	}
 
 	
-
+	/**
+	* Load the value of a csv into the table Capitulos
+	* @return the number of elements inserted into the table.
+	*/
 	public int loadCapitulos(String fileName) {
 
+		// We open connection in case it has not been opened previously
 		openConnection();
 		
 		// Counter to see how many items we have added to the database
 		int newEntries = 0;
-		PreparedStatement ps=null;;
-		// SQL
+		PreparedStatement ps = null;;
+		
 		try{
+			
 			// We need to do all the insert in one transaction so we set Autocommit to false in order to avoid that the commit occurs in each step.
 			conn.setAutoCommit(false);
 
 			// Try to load the .csv
-			
 			try (BufferedReader bufferLectura = new BufferedReader(new FileReader(fileName));)
 			{
 				
-				String insert_query = 	"INSERT INTO capitulo (id_serie, n_temporada,n_orden, fecha, titulo, duracion)" + 
-						"VALUES (?,?,?,?,?,?);";
+				String insert_query = "INSERT INTO capitulo (id_serie, n_temporada,n_orden, fecha, titulo, duracion)" + 
+						              "VALUES (?,?,?,?,?,?);";
 
+				// store current line of the csv
 				String linea = bufferLectura.readLine();
-				// WE do not want to read the very first line of the document because it contains useless text.
+				// We do not want to read the very first line of the document because it contains useless text.
 				linea = bufferLectura.readLine(); 
 				// In this case we have to use PreparedStatement because we have some parameters in the query that we want to fill in a loop
 				// to make it more efficient
 
-				
+				// for each line in the csv
 				while (linea != null) 
 				{
+					// we split the line with the separeted character (;)
 					String[] campo = linea.split(";"); 
 
 					// [0] = id_serie  [1] = n_temporada 
@@ -269,13 +285,19 @@ public class SeriesDatabase {
 		return newEntries;
 	}
 
+	/**
+	 * Insert into the database the evaluations that each user makes on each chapter.
+	 * @param filename the .csv file to load.
+	 * @return number of elements inserted into the database.
+	 */
 	public int loadValoraciones(String fileName) {
 
+		// We open connection in case it has not been opened previously
 		openConnection();
 
 		int newEntries = 0;
 		PreparedStatement ps=null;
-		// SQL
+
 		try{
 			// Now we need to make a commit in each insert so we want to be sure that Autocommit is activated
 			conn.setAutoCommit(true);
@@ -283,42 +305,42 @@ public class SeriesDatabase {
 			// Try to load the .csv
 			try (BufferedReader bufferLectura = new BufferedReader(new FileReader(fileName));)
 			{
-				String insert_query = 	"INSERT INTO valora (id_serie, n_temporada, n_orden, id_usuario, fecha, valor)" + 
-						"VALUES (?,?,?,?,?,?);";
+				String insert_query = "INSERT INTO valora (id_serie, n_temporada, n_orden, id_usuario, fecha, valor)" + 
+						              "VALUES (?,?,?,?,?,?);";
 
+				// store current line of the csv
 				String linea = bufferLectura.readLine();
-				linea = bufferLectura.readLine();// no queremos la cabezera del .csv
+				linea = bufferLectura.readLine(); // we dont care about the header of the csv
 
-				 
-
-				//			
-
-
-				int x = 0;
+				// for each line in the document
 				while (linea != null) {
+					// we split the line with the separeted character (;)
 					String[] campo = linea.split(";"); 
+
+					// prepare the statement
 					ps = conn.prepareStatement(insert_query);
 
-
-					ps.setInt	(1, Integer.valueOf(campo[0]));
-					ps.setInt	(2, Integer.valueOf(campo[1]));
-					ps.setInt	(3, Integer.valueOf(campo[2]));
-					ps.setInt	(4, Integer.valueOf(campo[3]));
+					// there is no need to convert the string to int
+					ps.setInt	(1, campo[0]);
+					ps.setInt	(2, campo[1]);
+					ps.setInt	(3, campo[2]);
+					ps.setInt	(4, campo[3]);
 					ps.setString(5, campo[4]);
-					ps.setInt	(6, Integer.valueOf(campo[5]));
+					ps.setInt	(6, campo[5]);
 
 					newEntries++;
 
+					// execute the statement
 					ps.executeUpdate();
 
+					// move to the next line in the csv
 					linea = bufferLectura.readLine();		
-					//					x++;
 				}
 
 			} 
 			catch (IOException e) 
 			{
-				System.out.println("No se puede leer el archivoooooooooooooo.");
+				System.out.println("No se pudo leer el archivo.");
 				e.printStackTrace();
 			}
 		}
@@ -339,27 +361,31 @@ public class SeriesDatabase {
 			}catch(SQLException e){
 				e.printStackTrace();
 
+			}finally{
+				System.out.println("Se han anyadido " + newEntries);
+				return newEntries;
 			}
 		}
-
-		System.out.println("Se han anyadido " + newEntries);
-		return newEntries;
 	}
 
+	/**
+	 * Consult the database for the list of all series and the number of episodes of each season.
+	 * @return list of all series and numnber of episodes of each season
+	 */
 	public String catalogo() {
+
 		// We open connection in case it has not been opened previously
 		openConnection();
 
-
 		String query = "SELECT temporada.id_serie, serie.titulo, temporada.n_temporada, temporada.n_capitulos " +
-				"FROM temporada " +
-				"INNER JOIN serie ON temporada.id_serie = serie.id_serie " +
-				"ORDER BY temporada.id_serie, temporada.n_temporada ;";
+					   "FROM temporada " +
+				       "INNER JOIN serie ON temporada.id_serie = serie.id_serie " +
+				       "ORDER BY temporada.id_serie, temporada.n_temporada ;";
 		
 		Statement st = null;
 		ResultSet rs=null;
-		try {
 
+		try {
 			// We define in SQL language the query that we are going to perform in the database
 			// As it does not have parameters, we use the Statement class
 			//We have to use the ResultSet class in order to display the result on the terminal
@@ -368,12 +394,10 @@ public class SeriesDatabase {
 
 			String result = "{";
 
-			
 			// These two parameters will help to establish a difference between two different series as we check serie_id and n_temporada
 			int current_serie     = -1;
 			int current_temporada = -1;
 
-			
 			// Until we reach the end of the table we need to execute the while
 			while (rs.next()) {
 				
@@ -382,8 +406,6 @@ public class SeriesDatabase {
 				int n_temporada = rs.getInt("n_temporada");
 				int n_capitulos = rs.getInt("n_capitulos");
 
-				
-				
 				// All these if's basically study all the possible cases (no series in the database or no chapters in a series)
 				// On each case we have to write something different
 				if(current_serie != id_serie){
@@ -448,8 +470,15 @@ public class SeriesDatabase {
 
 	}
 
+	/**
+	 * Consult the database for the list of all the chapters that belong to a series in which the description of at
+	 * least one of its genres matches the String of the method parameter.
+	 * @param genero the genre to look for.
+	 * @return the average of the valuations associated with these chapters.
+	 */
 	public double mediaGenero(String genero) {
 		
+		// We open connection in case it has not been opened previously
 		openConnection();
 		
 		String query1 =  "SELECT COUNT(DISTINCT genero.descripcion) Existe " +
@@ -464,7 +493,8 @@ public class SeriesDatabase {
 				 		 "WHERE genero.descripcion = ? ;";
 		
 		PreparedStatement pst1 = null;
-		ResultSet rs = null;
+		ResultSet           rs = null;
+
 		try {
 
 			// First query is going to check if the film genre that the user will pass exits in the DataBase using a counter
@@ -484,7 +514,6 @@ public class SeriesDatabase {
 			
 			pst1.close();
 			rs.close();
-			
 		
 			if(existe <= 0){
 				throw new Exception("No existe el genero");
@@ -509,21 +538,17 @@ public class SeriesDatabase {
 					{return 0.0;}
 				
 				return valmedia;
-				
 			}
-
-
-
 		} catch (SQLException se) {
 			System.out.println("Mensaje de error: " + se.getMessage() );
 			System.out.println("Código de error: " + se.getErrorCode() );
 			System.out.println("Estado SQL: " + se.getSQLState() );
 			se.printStackTrace();
-			return -2;
-			
-		} catch (Exception e) {
-			return -1;
 
+			return -2;
+		} catch (Exception e) {
+
+			return -1;
 		}finally{
 			try{
 				System.out.println("Ejecuto finally \n");
@@ -531,20 +556,27 @@ public class SeriesDatabase {
 				if(rs!=null) rs.close();
 			}catch(SQLException e){
 				e.printStackTrace();
-
 			}
 		}
-		
 	}
 
+	/**
+	 * Add the photo containing the file whose name is passed as a parameter to the user whose first surname is "Head"
+	 *  in case they do not already have a photo.
+	 * @param filename the name of the file to load
+	 * @return return true if you insert the photo and false otherwise
+	 */
 	public boolean setFoto(String filename) {
+
+		// We open connection in case it has not been opened previously
 		openConnection();
 		
 	        String query = "UPDATE usuario " + 
-	        			"SET fotografia = ? " + 
-	        			"WHERE apellido1 = 'Cabeza';";
+	        			   "SET fotografia = ? " + 
+	        			   "WHERE apellido1 = 'Cabeza';";
 	        
-	        PreparedStatement pst=null;
+			PreparedStatement pst=null;
+			
 	        try {
 	        	// For security we want to take the image as a parameter so we have to use PreparedStatement
 	            pst = conn.prepareStatement(query);
@@ -556,7 +588,7 @@ public class SeriesDatabase {
 	            pst.executeUpdate();
 	            
 	            
-	            //PARA VER SI SE GUARDA CORRECTAMENTE LA FOTOGRAFIA EN LA BASE DE DATOS LA EXTRAIGO DE AHI
+	            // PARA VER SI SE GUARDA CORRECTAMENTE LA FOTOGRAFIA EN LA BASE DE DATOS LA EXTRAIGO DE AHI
 //	            Statement st  = conn.createStatement();
 //	            ResultSet rs = st.executeQuery("select fotografia  from usuario where apellido1 = 'Cabeza';");
 //	            
@@ -581,12 +613,10 @@ public class SeriesDatabase {
 	            se.printStackTrace();
 	            return false;
 	        } catch (FileNotFoundException e) {
-	           
 	            System.out.println("No se encuentra el archivo");
 	            e.printStackTrace();
 	            return false;
 	        } catch (IOException e) {
-			
 				e.printStackTrace();
 				return false;
 			}finally{
@@ -595,12 +625,9 @@ public class SeriesDatabase {
 					if(pst!=null) pst.close();
 				}catch(SQLException e){
 					e.printStackTrace();
-
 				}
 			}
-	       
-	    }
-		
+	    }		
 }
 
 
